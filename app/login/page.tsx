@@ -8,16 +8,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [debugInfo, setDebugInfo] = useState<any>(null)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setDebugInfo(null)
-
-    console.log('Login attempt:', { login, passwordLength: password.length })
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -28,47 +24,15 @@ export default function LoginPage() {
         body: JSON.stringify({ login, password }),
       })
 
-      console.log('Response status:', response.status)
-
       const data = await response.json()
-      console.log('Response data:', data)
-
-      // Добавляем отладочную информацию
-      setDebugInfo({
-        status: response.status,
-        data: data,
-        cookies: document.cookie
-      })
 
       if (response.ok) {
-        console.log('Login successful')
-        
-        // Если есть токен в ответе, сохраняем его в localStorage как fallback
-        if (data.token) {
-          localStorage.setItem('auth-token', data.token)
-          console.log('Token saved to localStorage')
-        }
-        
-        // Проверяем, установился ли cookie
-        const hasCookie = document.cookie.includes('auth-token')
-        console.log('Cookie set:', hasCookie)
-        
-        if (!hasCookie && !data.token) {
-          setError('Ошибка установки авторизации')
-          return
-        }
-        
-        // Редирект с небольшой задержкой
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 100)
+        router.push('/dashboard')
       } else {
-        console.error('Login failed:', data.error)
         setError(data.error || 'Ошибка входа')
       }
     } catch (err) {
-      console.error('Network error:', err)
-      setError('Ошибка сети: ' + (err as Error).message)
+      setError('Ошибка сети')
     } finally {
       setLoading(false)
     }
@@ -76,7 +40,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-sm">
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -125,16 +89,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Debug информация */}
-            {debugInfo && (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Debug Info:</h4>
-                <pre className="text-xs text-gray-600 overflow-auto max-h-40">
-                  {JSON.stringify(debugInfo, null, 2)}
-                </pre>
-              </div>
-            )}
-
             <button
               type="submit"
               disabled={loading}
@@ -153,14 +107,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-            <h4 className="text-sm font-medium text-blue-800 mb-2">Отладка:</h4>
-            <div className="text-xs text-blue-700 space-y-1">
-              <div>Cookies: {document.cookie || 'нет'}</div>
-              <div>LocalStorage: {typeof window !== 'undefined' && localStorage.getItem('auth-token') ? 'есть токен' : 'нет токена'}</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
