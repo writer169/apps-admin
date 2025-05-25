@@ -29,7 +29,6 @@ export default function LoginPage() {
       })
 
       console.log('Response status:', response.status)
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
 
       const data = await response.json()
       console.log('Response data:', data)
@@ -37,14 +36,29 @@ export default function LoginPage() {
       // Добавляем отладочную информацию
       setDebugInfo({
         status: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
         data: data,
         cookies: document.cookie
       })
 
       if (response.ok) {
-        console.log('Login successful, redirecting...')
-        // Добавим небольшую задержку для отладки
+        console.log('Login successful')
+        
+        // Если есть токен в ответе, сохраняем его в localStorage как fallback
+        if (data.token) {
+          localStorage.setItem('auth-token', data.token)
+          console.log('Token saved to localStorage')
+        }
+        
+        // Проверяем, установился ли cookie
+        const hasCookie = document.cookie.includes('auth-token')
+        console.log('Cookie set:', hasCookie)
+        
+        if (!hasCookie && !data.token) {
+          setError('Ошибка установки авторизации')
+          return
+        }
+        
+        // Редирект с небольшой задержкой
         setTimeout(() => {
           router.push('/dashboard')
         }, 100)
@@ -55,7 +69,6 @@ export default function LoginPage() {
     } catch (err) {
       console.error('Network error:', err)
       setError('Ошибка сети: ' + (err as Error).message)
-      setDebugInfo({ networkError: (err as Error).message })
     } finally {
       setLoading(false)
     }
@@ -116,7 +129,7 @@ export default function LoginPage() {
             {debugInfo && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Debug Info:</h4>
-                <pre className="text-xs text-gray-600 overflow-auto">
+                <pre className="text-xs text-gray-600 overflow-auto max-h-40">
                   {JSON.stringify(debugInfo, null, 2)}
                 </pre>
               </div>
@@ -141,14 +154,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Информация о переменных окружения */}
-          <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-            <h4 className="text-sm font-medium text-yellow-800 mb-2">Проверьте переменные окружения:</h4>
-            <ul className="text-xs text-yellow-700 space-y-1">
-              <li>• JWT_SECRET должен быть установлен</li>
-              <li>• ADMIN_LOGIN должен быть установлен</li>
-              <li>• ADMIN_PASSWORD_HASH должен быть установлен</li>
-            </ul>
+          <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+            <h4 className="text-sm font-medium text-blue-800 mb-2">Отладка:</h4>
+            <div className="text-xs text-blue-700 space-y-1">
+              <div>Cookies: {document.cookie || 'нет'}</div>
+              <div>LocalStorage: {typeof window !== 'undefined' && localStorage.getItem('auth-token') ? 'есть токен' : 'нет токена'}</div>
+            </div>
           </div>
         </div>
       </div>
