@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { isAuthenticated } from '@/lib/auth'
+import { isAuthenticated } from '../lib/auth'
 
 export default function HomePage() {
   const authenticated = isAuthenticated()
