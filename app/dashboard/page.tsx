@@ -20,16 +20,28 @@ export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // В реальном приложении здесь будет API call для получения списка приложений
-    // Пока используем статичные данные для демонстрации
-    const mockApps: AppInfo[] = [
-      { id: 'notes_app', name: 'Notes App', url: 'https://notes.example.com' },
-      { id: 'todo_app', name: 'Todo App', url: 'https://todo.example.com' },
-      { id: 'blog_app', name: 'Blog App', url: 'https://blog.example.com' },
-    ]
+    const fetchApps = async () => {
+      try {
+        const response = await fetch('/api/apps')
+        const data = await response.json()
+        
+        if (response.ok) {
+          setApps(data.apps)
+        } else {
+          if (response.status === 401) {
+            router.push('/login')
+            return
+          }
+          console.error('Failed to fetch apps:', data.error)
+        }
+      } catch (error) {
+        console.error('Error fetching apps:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
     
-    setApps(mockApps)
-    setLoading(false)
+    fetchApps()
   }, [])
 
   const showNotification = (type: 'success' | 'error', message: string) => {
