@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
-import { isAuthenticated } from '@/lib/auth'
-import { storeMagicLinkToken } from '@/lib/redis'
-import { getAppsConfig } from '@/lib/config'
+import { isAuthenticated } from '../../../../lib/auth'
+import { storeMagicLinkToken } from '../../../../lib/redis'
+import { getAppsConfig } from '../../../../lib/config'
 
 export async function POST(request: Request) {
   try {
