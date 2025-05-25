@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict', // 'lax' может быть менее строгим, если есть проблемы с редиректами между поддоменами
+      sameSite: 'lax', // 'lax' может быть менее строгим, если есть проблемы с редиректами между поддоменами
       maxAge: 30 * 24 * 60 * 60, // 30 дней
       path: '/', // <--- ВАЖНОЕ ИЗМЕНЕНИЕ
     })
