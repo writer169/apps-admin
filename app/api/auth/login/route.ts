@@ -79,6 +79,7 @@ export async function POST(request: Request) {
     
     const response = NextResponse.json({ 
       success: true,
+      token: token, // Возвращаем токен для fallback
       debug: {
         tokenGenerated: !!token,
         cookieWillBeSet: true,
