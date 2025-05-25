@@ -1,4 +1,4 @@
-// app/api/auth/login/route.ts
+8// app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import { verifyCredentials, generateToken } from '../../../../lib/auth';
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const token = generateToken(); // Без await, если используете jsonwebtoken
+    const token = await generateToken(); // Без await, если используете jsonwebtoken
     console.log('[Login API] Token generated (first 10 chars):', token.substring(0, 10));
 
     const response = NextResponse.json({ success: true });
