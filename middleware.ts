@@ -40,7 +40,7 @@ export function middleware(request: NextRequest) {
 
     console.log('[Middleware] Token found (first 10 chars):', token.substring(0, 10));
 
-    const payload = verifyToken(token) as AuthPayload | null; 
+    const payload = await verifyToken(token) as AuthPayload | null; 
     console.log('[Middleware] Token payload from verifyToken:', payload);
 
     if (!payload || !payload.isAdmin) {
