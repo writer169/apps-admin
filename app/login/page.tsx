@@ -8,12 +8,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [debugInfo, setDebugInfo] = useState<any>(null)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setDebugInfo(null)
+
+    console.log('Login attempt:', { login, passwordLength: password.length })
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -24,15 +28,34 @@ export default function LoginPage() {
         body: JSON.stringify({ login, password }),
       })
 
+      console.log('Response status:', response.status)
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
+
       const data = await response.json()
+      console.log('Response data:', data)
+
+      // Добавляем отладочную информацию
+      setDebugInfo({
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        data: data,
+        cookies: document.cookie
+      })
 
       if (response.ok) {
-        router.push('/dashboard')
+        console.log('Login successful, redirecting...')
+        // Добавим небольшую задержку для отладки
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 100)
       } else {
+        console.error('Login failed:', data.error)
         setError(data.error || 'Ошибка входа')
       }
     } catch (err) {
-      setError('Ошибка сети')
+      console.error('Network error:', err)
+      setError('Ошибка сети: ' + (err as Error).message)
+      setDebugInfo({ networkError: (err as Error).message })
     } finally {
       setLoading(false)
     }
@@ -40,7 +63,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-lg">
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -89,6 +112,16 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Debug информация */}
+            {debugInfo && (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Debug Info:</h4>
+                <pre className="text-xs text-gray-600 overflow-auto">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
@@ -107,6 +140,16 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* Информация о переменных окружения */}
+          <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+            <h4 className="text-sm font-medium text-yellow-800 mb-2">Проверьте переменные окружения:</h4>
+            <ul className="text-xs text-yellow-700 space-y-1">
+              <li>• JWT_SECRET должен быть установлен</li>
+              <li>• ADMIN_LOGIN должен быть установлен</li>
+              <li>• ADMIN_PASSWORD_HASH должен быть установлен</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
