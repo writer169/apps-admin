@@ -64,25 +64,31 @@ export async function POST(request: Request) {
     const token = generateToken()
     console.log('Token generated:', !!token)
     
+    // Для Vercel нужно использовать заголовок Set-Cookie напрямую
+    const isProduction = process.env.NODE_ENV === 'production'
+    const cookieValue = [
+      `auth-token=${token}`,
+      'HttpOnly',
+      'Path=/',
+      `Max-Age=${30 * 24 * 60 * 60}`, // 30 дней
+      'SameSite=Strict',
+      isProduction ? 'Secure' : ''
+    ].filter(Boolean).join('; ')
+    
+    console.log('Setting cookie:', cookieValue)
+    
     const response = NextResponse.json({ 
       success: true,
       debug: {
         tokenGenerated: !!token,
-        cookieWillBeSet: true
+        cookieWillBeSet: true,
+        isProduction,
+        cookieValue
       }
     })
     
-    // Устанавливаем httpOnly cookie
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict' as const,
-      maxAge: 30 * 24 * 60 * 60, // 30 дней
-      path: '/' // Убедимся, что cookie доступно для всего сайта
-    }
-    
-    console.log('Setting cookie with options:', cookieOptions)
-    response.cookies.set('auth-token', token, cookieOptions)
+    // Устанавливаем cookie через заголовок
+    response.headers.set('Set-Cookie', cookieValue)
     
     console.log('=== LOGIN SUCCESS ===')
     return response
