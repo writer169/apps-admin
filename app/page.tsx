@@ -1,12 +1,13 @@
-import { redirect } from 'next/navigation'
-import { isAuthenticated } from '../lib/auth'
+// app/page.tsx
+import { redirect } from 'next/navigation';
+import { isAuthenticated } from '../lib/auth';
 
-export default function HomePage() {
-  const authenticated = isAuthenticated()
-  
+export default async function HomePage() {
+  const { authenticated } = await isAuthenticated();
+
   if (authenticated) {
-    redirect('/dashboard')
+    redirect('/dashboard');
   } else {
-    redirect('/login')
+    redirect('/login');
   }
 }
